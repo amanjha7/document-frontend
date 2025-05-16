@@ -1,0 +1,121 @@
+// doc-to-pdf.component.scss
+.converter-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.upload-card {
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  overflow: hidden;
+  
+  .card-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+}
+
+.supported-formats {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.drop-zone {
+  border: 2px dashed #dfe6e9;
+  border-radius: 0.75rem;
+  padding: 3rem 1rem;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+  
+  &.dragover {
+    border-color: #3498db;
+    background-color: rgba(52, 152, 219, 0.05);
+    
+    .bi-cloud-upload {
+      color: #3498db;
+    }
+  }
+
+  .drop-content {
+    text-align: center;
+    
+    .bi-cloud-upload {
+      font-size: 3rem;
+      color: #b2bec3;
+      margin-bottom: 1rem;
+      transition: color 0.3s ease;
+    }
+    
+    p {
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+.btn-choose {
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.selected-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    
+    .bi-file-earmark-text {
+      font-size: 1.5rem;
+      color: #3498db;
+    }
+  }
+}
+
+.btn-convert {
+  width: 100%;
+  padding: 1rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  
+  &:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+  }
+  
+  &:not(:disabled):hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .converter-container {
+    margin: 1rem;
+  }
+  
+  .drop-zone {
+    padding: 2rem 1rem;
+  }
+}

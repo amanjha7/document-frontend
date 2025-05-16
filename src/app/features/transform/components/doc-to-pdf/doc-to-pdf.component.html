@@ -1,0 +1,60 @@
+<!-- doc-to-pdf.component.html -->
+<div class="converter-container">
+  <div class="card upload-card">
+    <div class="card-body">
+      <h2 class="card-title">Convert Documents to PDF</h2>
+      <p class="supported-formats">
+        Supported formats: .doc, .docx, .odt, .rtf (MS Word, Google Docs, OpenOffice)
+      </p>
+
+      <div class="drop-zone" 
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onFileDrop($event)"
+           [class.dragover]="isDragging">
+        <div class="drop-content">
+          <i class="bi bi-cloud-upload"></i>
+          <p>Drag and drop your document here</p>
+          <span class="text-muted">or</span>
+          <button class="btn btn-primary btn-choose"
+                  (click)="fileInput.click()">
+            Choose File
+          </button>
+          <input #fileInput type="file" class="d-none" 
+                 (change)="onFileSelected($event)"
+                 accept=".docx">
+        </div>
+      </div>
+
+      <div class="selected-file mt-3" *ngIf="selectedFile">
+        <div class="file-info">
+          <i class="bi bi-file-earmark-text"></i>
+          <div>
+            <h6>{{ selectedFile.name }}</h6>
+            <p class="text-muted">
+              {{ selectedFile.size | fileSize }} - 
+              {{ selectedFile.type }}
+            </p>
+          </div>
+        </div>
+        <button class="btn btn-close"
+                (click)="clearFile()"
+                aria-label="Remove file"></button>
+      </div>
+
+      <div class="status-message mt-3" *ngIf="statusMessage">
+        <div class="alert" 
+             [class.alert-success]="statusType === 'success'"
+             [class.alert-danger]="statusType === 'error'">
+          {{ statusMessage }}
+        </div>
+      </div>
+
+      <button class="btn btn-convert mt-3"
+              [disabled]="!selectedFile"
+              (click)="convertToPdf()">
+        Convert to PDF
+      </button>
+    </div>
+  </div>
+</div>
