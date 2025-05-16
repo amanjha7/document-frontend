@@ -87,7 +87,7 @@ export class DocToPdfComponent {
     const formData = new FormData();
     formData.append('file', this.selectedFile);
 
-    fetch('https://document-backend-1.onrender.com/api/docs/convert-doc-to-pdf', {
+    fetch('https://document-backend-2.onrender.com/api/docs/convert-doc-to-pdf', {
       method: 'POST',
       body: formData
     })
@@ -96,7 +96,7 @@ export class DocToPdfComponent {
       this.showSuccess('Conversion complete! Click below to download.');
       this.statusMessage += ` Download will expire in 2 minutes.`;
 
-      const downloadUrl = `https://document-backend-1.onrender.com/api/docs/download/${data.id}`;
+      const downloadUrl = `https://document-backend-2.onrender.com/api/docs/download/${data.id}`;
       window.open(downloadUrl, '_blank'); // or use a "Download" button instead
     })
     .catch(err => {
