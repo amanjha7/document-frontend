@@ -1,1 +1,14 @@
-<p>editor works!</p>
+<div class="editor-container" [ngClass]="viewMode">
+  <div class="toolbar">
+    <button (click)="toggleView()">
+      {{ viewMode === 'book' ? 'Switch to Normal View' : 'Switch to Book View' }}
+    </button>
+  </div>
+
+  <ngx-editor-menu [editor]="editor" [toolbar]="toolbar"></ngx-editor-menu>
+
+  <ngx-editor
+    [editor]="editor"
+    placeholder="Start writing your masterpiece...">
+  </ngx-editor>
+</div>
