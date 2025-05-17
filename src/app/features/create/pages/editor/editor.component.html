@@ -3,12 +3,38 @@
     <button (click)="toggleView()">
       {{ viewMode === 'book' ? 'Switch to Normal View' : 'Switch to Book View' }}
     </button>
+
+    <button (click)="prevPage()" [disabled]="currentPageIndex === 0 || isAnimating">← Prev</button>
+    <button (click)="nextPage()" [disabled]="isAnimating">Next →</button>
   </div>
 
-  <ngx-editor-menu [editor]="editor" [toolbar]="toolbar"></ngx-editor-menu>
+  <ngx-editor-menu *ngIf="viewMode === 'normal'" [editor]="editors[0]" [toolbar]="toolbar"></ngx-editor-menu>
 
-  <ngx-editor
-    [editor]="editor"
-    placeholder="Start writing your masterpiece...">
-  </ngx-editor>
+  <div *ngIf="viewMode === 'book'" class="book-layout" [class.animating]="isAnimating">
+    <div class="page left-page">
+      <ngx-editor
+        [editor]="editors[0]"
+        [(ngModel)]="pages[currentPageIndex]"
+        placeholder="Start writing here...">
+      </ngx-editor>
+      <div class="page-number">Page {{ getPageNumber(currentPageIndex) }}</div>
+    </div>
+
+    <div class="page right-page" *ngIf="pages.length > currentPageIndex + 1">
+      <ngx-editor
+        [editor]="editors[1]"
+        [(ngModel)]="pages[currentPageIndex + 1]"
+        placeholder="Start writing here...">
+      </ngx-editor>
+      <div class="page-number">Page {{ getPageNumber(currentPageIndex + 1) }}</div>
+    </div>
+  </div>
+
+  <div *ngIf="viewMode === 'normal'" class="normal-layout">
+    <ngx-editor
+      [editor]="editors[0]"
+      [(ngModel)]="pages[0]"
+      placeholder="Start writing your masterpiece...">
+    </ngx-editor>
+  </div>
 </div>

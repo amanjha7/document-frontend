@@ -50,3 +50,150 @@
     to { opacity: 1; transform: translateY(0); }
   }
 }
+
+
+.editor-container {
+  padding: 1rem 2rem;
+  transition: all 0.3s ease;
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+
+    button {
+      background: black;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+
+      &:hover {
+        background: #333;
+      }
+    }
+  }
+
+  .book-layout {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    position: relative;
+    padding: 2rem;
+    background: #fdf6ef;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    animation: fadeIn 0.6s ease-in-out;
+
+    &::before {
+      content: '';
+      position: absolute;
+      width: 2px;
+      background: #ccc;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .page {
+      flex: 1;
+      padding: 1.5rem;
+      background: white;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+      border-radius: 10px;
+      min-height: 500px;
+
+      ngx-editor {
+        min-height: 100%;
+      }
+    }
+
+    .left-page {
+      border-right: 1px solid #eee;
+    }
+
+    .right-page {
+      border-left: 1px solid #eee;
+    }
+  }
+
+  .normal-layout {
+    ngx-editor {
+      min-height: 500px;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.05);
+      animation: fadeIn 0.3s ease-in-out;
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+.book-layout {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  position: relative;
+  padding: 2rem;
+  background: #fdf6ef;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  transition: transform 0.6s ease-in-out;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 2px;
+    background: #ccc;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &.animating {
+    transform: translateX(-30px);
+    opacity: 0.8;
+  }
+
+  .page {
+    flex: 1;
+    padding: 1.5rem;
+    background: white;
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    min-height: 500px;
+
+    ngx-editor {
+      min-height: 100%;
+    }
+  }
+
+  .left-page {
+    border-right: 1px solid #eee;
+  }
+
+  .right-page {
+    border-left: 1px solid #eee;
+  }
+}
+
+.page {
+  position: relative;
+  
+  .page-number {
+    position: absolute;
+    bottom: 8px;
+    right: 15px;
+    font-size: 0.9rem;
+    color: #aaa;
+    user-select: none;
+  }
+}
