@@ -1,1 +1,48 @@
-<p>pdf-to-doc works!</p>
+<!-- pdf-to-doc.component.html -->
+<div class="converter-container">
+  <div class="converter-card">
+    <h1 class="title">PDF to DOCX Converter</h1>
+    <p class="subtitle">Transform your PDF documents into editable Word files</p>
+
+    <div class="upload-section" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onFileDrop($event)"
+         [class.dragover]="isDragging" (click)="fileInput.click()">
+      <div class="upload-content">
+        <img src="assets/upload-icon.svg" alt="Upload" class="upload-icon">
+        <div class="upload-text">
+          <span class="primary-text">Choose a file</span> or drag it here
+        </div>
+        <div class="file-size">Supports: PDF • Up to 50MB</div>
+      </div>
+      <input #fileInput type="file" hidden accept=".pdf" (change)="onFileSelected($event)">
+    </div>
+
+    <div *ngIf="selectedFile" class="selected-file">
+      <span class="file-name">{{ selectedFile.name }}</span>
+      <button class="remove-btn" (click)="removeFile()">&times;</button>
+    </div>
+
+    <div class="actions">
+      <button class="convert-btn" (click)="convertFile()" [disabled]="!selectedFile || isLoading">
+        <span *ngIf="!isLoading">Convert to DOCX</span>
+        <span *ngIf="isLoading">Converting...</span>
+      </button>
+    </div>
+
+    <div *ngIf="isLoading" class="loader-container">
+      <div class="loader"></div>
+      <p class="converting-text">Converting your document...</p>
+    </div>
+
+    <div *ngIf="convertedFileUrl" class="download-section">
+      <h3 class="success-message">🎉 Conversion Successful!</h3>
+      <a class="download-btn" [href]="convertedFileUrl" download>
+        Download DOCX File
+        <img src="assets/download-icon.svg" alt="Download" class="download-icon">
+      </a>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      ⚠️ {{ errorMessage }}
+    </div>
+  </div>
+</div>
