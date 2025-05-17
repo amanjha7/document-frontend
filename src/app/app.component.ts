@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterModule, RouterOutlet } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 
 @Component({
@@ -7,6 +7,7 @@ import { HttpClientModule } from '@angular/common/http';
   standalone: true, // ✅ Required
   imports: [
     RouterOutlet,
+    RouterModule,
     HttpClientModule // ✅ Required here or in main.ts bootstrap
   ],
   templateUrl: './app.component.html',
