@@ -1,5 +1,7 @@
 // doc-to-pdf.component.ts
 import { Component } from '@angular/core';
+import { ApiService } from '../../../../core/services/api.service';
+import { TransformService } from '../../services/transform.service';
 
 @Component({
   selector: 'app-doc-to-pdf',
@@ -20,6 +22,8 @@ export class DocToPdfComponent {
     'application/vnd.oasis.opendocument.text',
     'application/rtf'
   ];
+
+  constructor(private apiService:ApiService, private transformService: TransformService){}
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -84,23 +88,17 @@ export class DocToPdfComponent {
   convertToPdf() {
     if (!this.selectedFile) return;
 
-    const formData = new FormData();
-    formData.append('file', this.selectedFile);
+    this.apiService.convertDocToPdf(this.selectedFile).subscribe({
+      next: (data) => {
+        this.showSuccess('Conversion complete! Click below to download.');
+        this.statusMessage += ` Download will expire in 2 minutes.`;
 
-    fetch('https://document-backend-7wu6.onrender.com/api/docs/convert-doc-to-pdf', {
-      method: 'POST',
-      body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-      this.showSuccess('Conversion complete! Click below to download.');
-      this.statusMessage += ` Download will expire in 2 minutes.`;
-
-      const downloadUrl = `https://document-backend-7wu6.onrender.com/api/docs/download/${data.id}`;
-      window.open(downloadUrl, '_blank'); // or use a "Download" button instead
-    })
-    .catch(err => {
-      this.showError('Conversion failed. Please try again.');
+        const downloadUrl = this.apiService.getDownloadUrl(data.id);
+        window.open(downloadUrl, '_blank');
+      },
+      error: () => {
+        this.showError('Conversion failed. Please try again.');
+      }
     });
   }
 

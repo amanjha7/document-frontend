@@ -7,6 +7,7 @@ import { TransformHomeComponent } from './pages/transform-home/transform-home.co
 import { DocToPdfComponent } from './components/doc-to-pdf/doc-to-pdf.component';
 import { PdfToDocComponent } from './components/pdf-to-doc/pdf-to-doc.component';
 import { FileSizePipe } from '../../shared/pipes/file-size.pipe';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -19,7 +20,8 @@ import { FileSizePipe } from '../../shared/pipes/file-size.pipe';
   imports: [
     CommonModule,
     TransformRoutingModule,
-    FileSizePipe
+    FileSizePipe,
+    HttpClientModule
   ]
 })
 export class TransformModule { }
