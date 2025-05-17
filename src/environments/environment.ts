@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:5000/api' // example for local dev
+  production: true,
+  apiUrl: 'https://document-backend-7wu6.onrender.com/api' // example for deployed backend
 };
