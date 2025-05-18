@@ -1,40 +1,32 @@
-<div class="editor-container" [ngClass]="viewMode">
-  <div class="toolbar">
-    <button (click)="toggleView()">
-      {{ viewMode === 'book' ? 'Switch to Normal View' : 'Switch to Book View' }}
+<div class="editor-container pages-mode">
+  <div class="download-pdf">
+    <button
+      class="btn btn-primary"
+      (click)="downloadPdf()"
+      [disabled]="!isPdfReady"
+    >
+      Download PDF
     </button>
-
-    <button (click)="prevPage()" [disabled]="currentPageIndex === 0 || isAnimating">← Prev</button>
-    <button (click)="nextPage()" [disabled]="isAnimating">Next →</button>
+  </div>
+  <div class="toolbar">
+    <ngx-editor-menu [editor]="activeEditor" [toolbar]="toolbar"></ngx-editor-menu>
   </div>
 
-  <ngx-editor-menu *ngIf="viewMode === 'normal'" [editor]="editors[0]" [toolbar]="toolbar"></ngx-editor-menu>
-
-  <div *ngIf="viewMode === 'book'" class="book-layout" [class.animating]="isAnimating">
-    <div class="page left-page">
-      <ngx-editor
-        [editor]="editors[0]"
-        [(ngModel)]="pages[currentPageIndex]"
-        placeholder="Start writing here...">
-      </ngx-editor>
-      <div class="page-number">Page {{ getPageNumber(currentPageIndex) }}</div>
+  <div class="page-list" id="printArea">
+    <div
+      *ngFor="let editor of editors; let i = index"
+      class="page"
+      (input)="onPageInput(i)"
+      #pageElement
+    >
+      <div class="page-content">
+        <ngx-editor
+          [editor]="editor"
+          [(ngModel)]="pages[i]"
+          placeholder="Start writing here..."
+        ></ngx-editor>
+      </div>
+      <div class="page-number">Page {{ i + 1 }}</div>
     </div>
-
-    <div class="page right-page" *ngIf="pages.length > currentPageIndex + 1">
-      <ngx-editor
-        [editor]="editors[1]"
-        [(ngModel)]="pages[currentPageIndex + 1]"
-        placeholder="Start writing here...">
-      </ngx-editor>
-      <div class="page-number">Page {{ getPageNumber(currentPageIndex + 1) }}</div>
-    </div>
-  </div>
-
-  <div *ngIf="viewMode === 'normal'" class="normal-layout">
-    <ngx-editor
-      [editor]="editors[0]"
-      [(ngModel)]="pages[0]"
-      placeholder="Start writing your masterpiece...">
-    </ngx-editor>
   </div>
 </div>

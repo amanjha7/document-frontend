@@ -1,17 +1,35 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectorRef,
+  AfterViewInit,
+  ViewChildren,
+  QueryList,
+  ElementRef
+} from '@angular/core';
 import { Editor, Toolbar } from 'ngx-editor';
+import { saveAs } from 'file-saver';
+import { HttpClient } from '@angular/common/http';
+
+// Add a module declaration for untyped module
+
 
 @Component({
   selector: 'app-editor',
-  templateUrl: './editor.component.html',
   standalone:false,
+  templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent implements OnInit, OnDestroy {
+export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   editors: Editor[] = [];
   pages: string[] = [];
-  currentPageIndex = 0;
-  isAnimating = false;
+  pageLabels: string[] = [];
+  isPdfReady: boolean = true;
+
+  activeEditor!: Editor;
+
+  @ViewChildren('pageElement', { read: ElementRef }) pageElements!: QueryList<ElementRef>;
 
   toolbar: Toolbar = [
     ['bold', 'italic', 'underline', 'strike'],
@@ -23,63 +41,75 @@ export class EditorComponent implements OnInit, OnDestroy {
     ['align_left', 'align_center', 'align_right'],
     ['undo', 'redo'],
     ['superscript', 'subscript', 'horizontal_rule'],
-    ['align_justify','format_clear','outdent','link','code']
+    ['align_justify', 'format_clear', 'outdent', 'link', 'code']
   ];
 
-  viewMode: 'book' | 'normal' = 'book';
-
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef, private http: HttpClient) {}
 
   ngOnInit() {
-    this.pages = ['', '']; // Start with two empty pages
-    // Create 2 editors for book view, 1 for normal view
-    this.editors = [new Editor(), new Editor()];
+    this.addPage(); // one initial page
+  }
+
+  ngAfterViewInit() {
+    this.observeOverflow();
   }
 
   ngOnDestroy() {
-    this.editors.forEach(e => e.destroy());
+    this.editors.forEach(editor => editor.destroy());
   }
 
-  toggleView() {
-    this.viewMode = this.viewMode === 'book' ? 'normal' : 'book';
-    if (this.viewMode === 'normal' && this.editors.length > 1) {
-      // In normal view, only one editor needed
-      this.editors[1].destroy();
-      this.editors = [this.editors[0]];
-    } else if (this.viewMode === 'book' && this.editors.length === 1) {
-      // Back to book view, recreate second editor if missing
-      this.editors.push(new Editor());
-    }
+  addPage() {
+    const editor = new Editor();
+    this.editors.push(editor);
+    this.pages.push('');
+    this.pageLabels.push('');
+    this.setActiveEditor(editor);
   }
 
-  nextPage() {
-    if (this.isAnimating) return;
-    this.isAnimating = true;
+  setActiveEditor(editor: Editor) {
+    this.activeEditor = editor;
+  }
 
-    if (this.currentPageIndex + 2 >= this.pages.length) {
-      this.pages.push('', '');
-    }
-    this.currentPageIndex += 2;
+  observeOverflow() {
+    const observer = new ResizeObserver(() => {
+      this.pageElements.forEach((pageRef, i) => {
+        const page = pageRef.nativeElement;
+        if (page.scrollHeight > page.clientHeight && i === this.pages.length - 1) {
+          this.addPage();
+        }
+      });
+    });
 
-    // no need to recreate editors, just update view
-    setTimeout(() => {
-      this.isAnimating = false;
+    this.pageElements.forEach(pageRef => observer.observe(pageRef.nativeElement));
+  }
+
+  onPageInput(index: number) {
+  setTimeout(() => {
+    const pageElement = this.pageElements.toArray()[index].nativeElement;
+    const content = pageElement.querySelector('.page-content');
+
+    const scrollHeight = content.scrollHeight;
+    const clientHeight = content.clientHeight;
+
+    // Threshold of 20px to avoid premature triggering
+    if (scrollHeight >= clientHeight - 20 && index === this.pages.length - 1) {
+      this.addPage();
       this.cdr.detectChanges();
-    }, 400);
-  }
+    }
+  }, 100);
+}
 
-  prevPage() {
-    if (this.isAnimating || this.currentPageIndex === 0) return;
-    this.isAnimating = true;
-    this.currentPageIndex -= 2;
+  downloadPdf() {
+     const element = document.getElementById('printArea');
+      if (!element) return;
 
-    setTimeout(() => {
-      this.isAnimating = false;
-      this.cdr.detectChanges();
-    }, 400);
-  }
+      const htmlContent = element.innerHTML;
 
-  getPageNumber(pageIndex: number): number {
-    return pageIndex + 1;
+      this.http.post('http://localhost:5000/api/create/generate-pdf', { htmlContent }, { responseType: 'blob' })
+        .subscribe(blob => {
+          saveAs(blob, 'document.pdf');
+        }, err => {
+          console.error('PDF download failed', err);
+        });
   }
 }
