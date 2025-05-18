@@ -11,6 +11,7 @@ import {
 import { Editor, Toolbar } from 'ngx-editor';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 
 // Add a module declaration for untyped module
 
@@ -105,7 +106,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
       const htmlContent = element.innerHTML;
 
-      this.http.post('http://localhost:5000/api/create/generate-pdf', { htmlContent }, { responseType: 'blob' })
+      this.http.post(`${environment.apiUrl}/create/generate-pdf`, { htmlContent }, { responseType: 'blob' })
         .subscribe(blob => {
           saveAs(blob, 'document.pdf');
         }, err => {
