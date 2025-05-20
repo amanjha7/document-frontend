@@ -6,6 +6,7 @@ import { ImageDoctorComponent } from './image-doctor.component';
 import { ImageEditorComponent } from './pages/image-editor/image-editor.component';
 import { ResizeComponent } from './components/resize/resize.component';
 import { AnnotateComponent } from './components/annotate/annotate.component';
+import { FormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -17,7 +18,8 @@ import { AnnotateComponent } from './components/annotate/annotate.component';
   ],
   imports: [
     CommonModule,
-    ImageDoctorRoutingModule
+    ImageDoctorRoutingModule,
+    FormsModule
   ]
 })
 export class ImageDoctorModule { }

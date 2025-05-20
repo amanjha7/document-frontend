@@ -1,1 +1,21 @@
-<p>image-doctor works!</p>
+<div class="editor-container">
+  <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+
+  <div *ngIf="imageLoaded" class="toolbar">
+    <button (click)="setTool('rect')">Square</button>
+    <button (click)="setTool('oval')">Oval</button>
+    <button (click)="setTool('arrow')">Arrow</button>
+    <button (click)="setTool('text')">Text</button>
+    <button (click)="setTool('blur')">Blur</button>
+    <input type="color" [(ngModel)]="selectedColor" />
+    <button (click)="downloadImage()">Download</button>
+  </div>
+
+  <canvas #imageCanvas
+          (mousedown)="onMouseDown($event)"
+          (mousemove)="onMouseMove($event)"
+          (mouseup)="onMouseUp($event)"
+          width="800"
+          height="600">
+  </canvas>
+</div>
