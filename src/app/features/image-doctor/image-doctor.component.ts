@@ -20,10 +20,11 @@ export class ImageDoctorComponent implements AfterViewInit {
   private drawing = false;
   private startX = 0;
   private startY = 0;
+  private selectedTextIndex: number = -1;
 
   selectedTool: string = 'rect';
   selectedColor: string = '#ff0000';
-  selectedLineWidth: number = 3;
+  selectedLineWidth: number = 2.5;
   fillShape: boolean = false;
   imageLoaded = false;
   undoStack: any[] = [];
@@ -56,60 +57,93 @@ export class ImageDoctorComponent implements AfterViewInit {
     this.selectedTool = tool;
   }
 
+  // onMouseDown(event: MouseEvent) {
+  //   if (!this.imageLoaded) return;
+  //   this.drawing = true;
+  //   this.startX = event.offsetX;
+  //   this.startY = event.offsetY;
+  // }
+
   onMouseDown(event: MouseEvent) {
     if (!this.imageLoaded) return;
+    const { x, y } = this.getCanvasCoordinates(event);
     this.drawing = true;
-    this.startX = event.offsetX;
-    this.startY = event.offsetY;
+    this.startX = x;
+    this.startY = y;
   }
 
   onMouseMove(event: MouseEvent) {
     if (!this.drawing || !this.imageLoaded) return;
-    
-    const currentX = event.offsetX;
-    const currentY = event.offsetY;
+    const { x, y } = this.getCanvasCoordinates(event);
 
     this.previewAction = {
       type: this.selectedTool,
       x: this.startX,
       y: this.startY,
-      width: currentX - this.startX,
-      height: currentY - this.startY,
+      width: x - this.startX,
+      height: y - this.startY,
       color: this.selectedColor,
       lineWidth: this.selectedLineWidth,
       fill: this.fillShape,
       fromX: this.startX,
       fromY: this.startY,
-      toX: currentX,
-      toY: currentY
+      toX: x,
+      toY: y
     };
 
     this.redraw();
   }
+  
+onMouseUp(event: MouseEvent) {
+  if (!this.imageLoaded) return;
+  this.drawing = false;
+  const { x, y } = this.getCanvasCoordinates(event);
 
-  onMouseUp(event: MouseEvent) {
-    if (!this.imageLoaded) return;
-    this.drawing = false;
-
-    if (this.selectedTool === 'text') {
-      const text = prompt('Enter text:');
-      if (text) {
-        this.actions.push({
-          type: 'text',
-          x: event.offsetX,
-          y: event.offsetY,
-          text: text,
-          color: this.selectedColor,
-          lineWidth: this.selectedLineWidth
-        });
+  if (this.selectedTool === 'text') {
+    for (let i = this.actions.length - 1; i >= 0; i--) {
+      const action = this.actions[i];
+      if (action.type === 'text' && this.isTextClicked(action, x, y)) {
+        const newText = prompt('Edit text:', action.text);
+        if (newText !== null) {
+          action.text = newText;
+          action.lineWidth = this.selectedLineWidth;
+          this.selectedTextIndex = i;
+          this.redraw();
+        }
+        return;
       }
-    } else if (this.previewAction) {
-      this.actions.push({...this.previewAction});
-      this.undoStack.push(this.previewAction);
     }
 
-    this.previewAction = null;
-    this.redraw();
+    const text = prompt('Enter text:');
+    if (text) {
+      this.actions.push({
+        type: 'text',
+        x,
+        y,
+        text,
+        color: this.selectedColor,
+        lineWidth: this.selectedLineWidth
+      });
+      this.selectedTextIndex = this.actions.length - 1;
+    }
+  } else if (this.previewAction) {
+    this.actions.push({ ...this.previewAction });
+    this.undoStack.push(this.previewAction);
+  }
+
+  this.previewAction = null;
+  this.redraw();
+}
+
+
+    private isTextClicked(action: any, x: number, y: number): boolean {
+    this.ctx.font = `${action.lineWidth * 4}px Arial`;
+    const metrics = this.ctx.measureText(action.text);
+    const height = action.lineWidth * 4;
+    return x >= action.x && 
+           x <= action.x + metrics.width &&
+           y >= action.y - height && 
+           y <= action.y;
   }
 
   private redraw() {
@@ -131,10 +165,9 @@ export class ImageDoctorComponent implements AfterViewInit {
 
     switch (action.type) {
       case 'rect':
+        this.ctx.strokeRect(action.x, action.y, action.width, action.height);
         if (action.fill) {
           this.ctx.fillRect(action.x, action.y, action.width, action.height);
-        } else {
-          this.ctx.strokeRect(action.x, action.y, action.width, action.height);
         }
         break;
       case 'oval':
@@ -149,7 +182,7 @@ export class ImageDoctorComponent implements AfterViewInit {
         action.fill ? this.ctx.fill() : this.ctx.stroke();
         break;
       case 'arrow':
-        this.drawArrow(action.fromX, action.fromY, action.toX, action.toY);
+        this.drawArrow(action.x, action.y, action.toX, action.toY);
         break;
       case 'text':
         this.ctx.font = `${action.lineWidth * 4}px Arial`;
@@ -193,10 +226,27 @@ export class ImageDoctorComponent implements AfterViewInit {
     }
   }
 
+  setLineWidth(width: number) {
+    this.selectedLineWidth = width;
+    if (this.selectedTextIndex !== -1) {
+      this.actions[this.selectedTextIndex].lineWidth = width;
+      this.redraw();
+    }
+  }
+
   downloadImage() {
     const link = document.createElement('a');
     link.download = 'edited-image.png';
     link.href = this.canvasRef.nativeElement.toDataURL();
     link.click();
   }
+
+  private getCanvasCoordinates(event: MouseEvent): { x: number; y: number } {
+    const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left +20,
+      y: event.clientY - rect.top +20
+    };
+  }
+
 }
