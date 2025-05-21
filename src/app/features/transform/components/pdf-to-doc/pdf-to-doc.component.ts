@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { TransformService } from '../../services/transform.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import Docxtemplater from 'docxtemplater';
-import JSZip from 'jszip';
+import Pizzip from 'pizzip';
 import { saveAs } from 'file-saver'
 
 @Component({
@@ -74,7 +74,7 @@ selectedFile: File | null = null;
   }
 
   downloadDocx() {
-    const zip = new JSZip();
+    const zip = new Pizzip();
     const doc = new Docxtemplater();
     doc.loadZip(zip);
     
@@ -85,8 +85,9 @@ selectedFile: File | null = null;
       doc.render();
       const buffer = doc.getZip().generate({ type: 'blob' });
       saveAs(buffer, 'extracted-content.docx');
-    } catch (error) {
-      this.error = 'Error generating document';
+    } catch (error:any) {
+      console.error(error);
+      this.error = 'Error generating document: ' + error.message;
     }
   }
 
