@@ -22,4 +22,41 @@ export class TransformService {
 
     return response as Blob;
   }
+
+  async ocrExtractText(file: File): Promise<{ text: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await this.http.post(`${this.baseUrl}/ocr/extract-text`, formData).toPromise();
+
+    return response as { text: string };
+  }
+  async ocrExtractTextFromUrl(url: string): Promise<{ text: string }> {
+    const formData = new FormData();
+    formData.append('url', url);
+
+    const response = await this.http.post(`${this.baseUrl}/ocr-extract-text-from-url`, formData).toPromise();
+
+    return response as { text: string };
+  }
+  async ocrExtractTextFromUrlAndConvertToDoc(url: string): Promise<Blob> {
+    const formData = new FormData();
+    formData.append('url', url);
+
+    const response = await this.http.post(`${this.baseUrl}/ocr-extract-text-from-url-and-convert-to-doc`, formData, {
+      responseType: 'blob'
+    }).toPromise();
+
+    return response as Blob;
+  }
+  async convertPdfToDocFromUrl(url: string): Promise<Blob> {
+    const formData = new FormData();
+    formData.append('url', url);
+
+    const response = await this.http.post(`${this.baseUrl}${this.apiUrl}`, formData, {
+      responseType: 'blob'
+    }).toPromise();
+
+    return response as Blob;
+  }
 }

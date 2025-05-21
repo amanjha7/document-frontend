@@ -1,48 +1,37 @@
-<!-- pdf-to-doc.component.html -->
-<div class="converter-container">
-  <div class="converter-card">
-    <h1 class="title">PDF to DOCX Converter</h1>
-    <p class="subtitle">Transform your PDF documents into editable Word files</p>
+<div class="container mt-4">
+  <h3>Extract Text from PDF/Image</h3>
 
-    <div class="upload-section" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onFileDrop($event)"
-         [class.dragover]="isDragging" (click)="fileInput.click()">
-      <div class="upload-content">
-        <img src="assets/upload-icon.svg" alt="Upload" class="upload-icon">
-        <div class="upload-text">
-          <span class="primary-text">Choose a file</span> or drag it here
-        </div>
-        <div class="file-size">Supports: PDF • Up to 50MB</div>
+  <div class="mb-3">
+    <input type="file" accept=".pdf, image/*" (change)="onFileSelected($event)" class="form-control" />
+  </div>
+
+  <button class="btn btn-primary" (click)="extractText()" [disabled]="!selectedFile || isLoading">
+    {{ isLoading ? 'Extracting...' : 'Extract Text' }}
+  </button>
+
+  <div *ngIf="extractedText" class="mt-4">
+    <div class="d-flex justify-content-between mb-2">
+      <h5>Extracted Text:</h5>
+      <div>
+        <button class="btn btn-sm btn-secondary me-2" (click)="toggleEdit()">
+          {{ editing ? 'Preview' : 'Edit' }}
+        </button>
+        <button class="btn btn-sm btn-success" (click)="downloadDocx()">Download DOCX</button>
+        <button class="btn btn-sm btn-info ms-2" (click)="downloadTxt()">Download TXT</button>
       </div>
-      <input #fileInput type="file" hidden accept=".pdf" (change)="onFileSelected($event)">
     </div>
 
-    <div *ngIf="selectedFile" class="selected-file">
-      <span class="file-name">{{ selectedFile.name }}</span>
-      <button class="remove-btn" (click)="removeFile()">&times;</button>
-    </div>
+    <!-- Rich Text Editor -->
+    <quill-editor *ngIf="editing" 
+                  [(ngModel)]="extractedText" 
+                  [modules]="editorConfig"
+                  class="form-control"></quill-editor>
 
-    <div class="actions">
-      <button class="convert-btn" (click)="convertFile()" [disabled]="!selectedFile || isLoading">
-        <span *ngIf="!isLoading">Convert to DOCX</span>
-        <span *ngIf="isLoading">Converting...</span>
-      </button>
-    </div>
+    <!-- Formatted Preview -->
+    <div *ngIf="!editing" class="formatted-preview" [innerHTML]="formattedText"></div>
 
-    <div *ngIf="isLoading" class="loader-container">
-      <div class="loader"></div>
-      <p class="converting-text">Converting your document...</p>
-    </div>
-
-    <div *ngIf="convertedFileUrl" class="download-section">
-      <h3 class="success-message">🎉 Conversion Successful!</h3>
-      <a class="download-btn" [href]="convertedFileUrl" download>
-        Download DOCX File
-        <img src="assets/download-icon.svg" alt="Download" class="download-icon">
-      </a>
-    </div>
-
-    <div *ngIf="errorMessage" class="error-message">
-      ⚠️ {{ errorMessage }}
+    <div *ngIf="error" class="alert alert-danger mt-3">
+      {{ error }}
     </div>
   </div>
 </div>

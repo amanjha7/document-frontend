@@ -1,6 +1,9 @@
-// pdf-to-doc.component.ts
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { TransformService } from '../../services/transform.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import Docxtemplater from 'docxtemplater';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver'
 
 @Component({
   selector: 'app-pdf-to-doc',
@@ -9,72 +12,86 @@ import { TransformService } from '../../services/transform.service';
   styleUrls: ['./pdf-to-doc.component.scss']
 })
 export class PdfToDocComponent {
-  @ViewChild('fileInput') fileInput!: ElementRef;
+selectedFile: File | null = null;
+  extractedText: string = '';
+  isLoading: boolean = false;
+  error: string = '';
   
-  selectedFile: File | null = null;
-  isLoading = false;
-  convertedFileUrl: string | null = null;
-  errorMessage: string | null = null;
-  isDragging = false;
+  // New properties
+  editing: boolean = false;
+  formattedText: SafeHtml = '';
+  editorConfig = {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],
+      ['blockquote', 'code-block'],
+      [{ 'header': 1 }, { 'header': 2 }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      ['clean']
+    ]
+  };
 
-  constructor(private transformService: TransformService) {}
+  constructor(
+    private transformService: TransformService,
+    private sanitizer: DomSanitizer
+  ) {}
 
   onFileSelected(event: any): void {
-    this.handleFile(event.target.files[0]);
+    this.selectedFile = event.target.files[0];
+    this.extractedText = '';
+    this.error = '';
   }
 
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragging = true;
-  }
-
-  onDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragging = false;
-  }
-
-  onFileDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragging = false;
-    const file = event.dataTransfer?.files[0];
-    if (file) this.handleFile(file);
-  }
-
-  private handleFile(file: File): void {
-    if (file.type !== 'application/pdf') {
-      this.errorMessage = 'Please select a PDF file';
-      return;
-    }
-    
-    if (file.size > 50 * 1024 * 1024) { // 50MB limit
-      this.errorMessage = 'File size exceeds 50MB limit';
-      return;
-    }
-    
-    this.selectedFile = file;
-    this.errorMessage = null;
-    this.convertedFileUrl = null;
-  }
-
-  removeFile(): void {
-    this.selectedFile = null;
-    this.fileInput.nativeElement.value = '';
-  }
-
-  async convertFile(): Promise<void> {
+  extractText(): void {
     if (!this.selectedFile) return;
 
     this.isLoading = true;
-    this.errorMessage = null;
+    this.transformService.ocrExtractText(this.selectedFile)
+      .then((res) => {
+        this.extractedText = res.text;
+        this.isLoading = false;
+      })
+      .catch((err) => {
+        this.error = 'Something went wrong while extracting text.';
+        this.isLoading = false;
+      });
+  }
 
-    try {
-      const convertedFile = await this.transformService.convertPdfToDoc(this.selectedFile);
-      this.convertedFileUrl = URL.createObjectURL(convertedFile);
-    } catch (error) {
-      this.errorMessage = 'Conversion failed. Please try again.';
-      console.error('Conversion error:', error);
-    } finally {
-      this.isLoading = false;
+  toggleEdit() {
+    this.editing = !this.editing;
+    if (!this.editing) {
+      this.formatTextForPreview();
     }
+  }
+
+  private formatTextForPreview() {
+    // Basic formatting - enhance this based on your OCR results
+    const formatted = this.extractedText
+      .replace(/\n{2,}/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+      .replace(/ {2,}/g, ' &nbsp;');
+    this.formattedText = this.sanitizer.bypassSecurityTrustHtml(`<p>${formatted}</p>`);
+  }
+
+  downloadDocx() {
+    const zip = new JSZip();
+    const doc = new Docxtemplater();
+    doc.loadZip(zip);
+    
+    const content = this.extractedText.replace(/<br>/g, '\n').replace(/&nbsp;/g, ' ');
+    doc.setData({ content: content });
+    
+    try {
+      doc.render();
+      const buffer = doc.getZip().generate({ type: 'blob' });
+      saveAs(buffer, 'extracted-content.docx');
+    } catch (error) {
+      this.error = 'Error generating document';
+    }
+  }
+
+  downloadTxt() {
+    const blob = new Blob([this.extractedText], { type: 'text/plain' });
+    saveAs(blob, 'extracted-content.txt');
   }
 }
